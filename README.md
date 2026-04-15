@@ -7,7 +7,9 @@
 - Аватарку можно двигать, увеличивать или уменьшать.
 
 ---
+
 <img width="716" height="574" alt="Screenshot_12-Photoroom" src="https://github.com/user-attachments/assets/ec3cca20-5682-4e17-966c-4f7d5d1a5cdc" />
+
 ---
 
 ## Установка
