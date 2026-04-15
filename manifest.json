@@ -1,0 +1,10 @@
+{
+  "name": "BB-Floating-Avatar-Viewer",
+  "display_name": "BB Floating Avatar Viewer",
+  "description": "Плавающие окна аватарок с drag и свободным изменением размера для SillyTavern.",
+  "version": "0.4.2",
+  "author": "OpenAI + BruniikBron",
+  "js": "index.js",
+  "css": "style.css",
+  "requires": []
+}
