@@ -27,4 +27,4 @@
 
 **[BruniikBron: Lo-Fi & Mods 🌙](https://bblofi.online/)**
 
-**[TG](https://www.google.com/search?q=t.me/Brun11kBr0n)**
+**[TG](https://t.me/Brun11kBr0n)**
