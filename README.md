@@ -1,4 +1,4 @@
-# Floating Avatar Viewer
+# BB Floating Avatar Viewer
 
 ## Что умеет
 
