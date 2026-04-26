@@ -81,6 +81,14 @@
     image-rendering: auto;
 }
 
+#bbfav-root .bbfav-window.is-oversized .bbfav-image-wrap {
+    cursor: grab;
+}
+
+#bbfav-root .bbfav-window.is-oversized.is-dragging .bbfav-image-wrap {
+    cursor: grabbing;
+}
+
 #bbfav-root .bbfav-close {
     position: absolute;
     top: 0;

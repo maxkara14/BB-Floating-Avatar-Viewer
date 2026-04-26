@@ -34,6 +34,10 @@ const DESKTOP_BREAKPOINT = 768;
 const HEADER_HEIGHT = 28;
 const MIN_WINDOW_WIDTH_MOBILE = 120;
 const MIN_WINDOW_WIDTH_DESKTOP = 160;
+const MAX_WINDOW_VIEWPORT_MULTIPLIER = 12;
+const MAX_WINDOW_PIXEL_SIZE = 12000;
+const OVERSIZED_WINDOW_VISIBLE_EDGE_MOBILE = 48;
+const OVERSIZED_WINDOW_VISIBLE_EDGE_DESKTOP = 64;
 const PERSONA_HINT_SELECTORS = [
     '#user_avatar_block',
     '[id*="user_avatar"]',
@@ -542,7 +546,8 @@ class FloatingAvatarWindow {
             if (event.target.closest('.bbfav-close')) return;
             if (event.target.closest('.bbfav-resize-handle')) return;
             const dragHandle = event.target.closest('.bbfav-header, .bbfav-header-grip');
-            if (!dragHandle) return;
+            const panSurface = event.target.closest('.bbfav-image-wrap') && this.canPanFromContent();
+            if (!dragHandle && !panSurface) return;
             this.manager.bringToFront(this);
             this.stopAnimatedResize();
             this.dragState = {
@@ -651,6 +656,7 @@ class FloatingAvatarWindow {
             const closeButton = event.target.closest('.bbfav-close');
             const resizeHandle = event.target.closest('.bbfav-resize-handle');
             const dragHandle = event.target.closest('.bbfav-header, .bbfav-header-grip');
+            const panSurface = event.target.closest('.bbfav-image-wrap') && this.canPanFromContent();
 
             if (closeButton) return;
 
@@ -672,7 +678,7 @@ class FloatingAvatarWindow {
                 return;
             }
 
-            if (dragHandle) {
+            if (dragHandle || panSurface) {
                 this.manager.bringToFront(this);
                 this.stopAnimatedResize();
                 this.touchResizeState = null;
@@ -845,16 +851,28 @@ class FloatingAvatarWindow {
         return window.innerWidth <= DESKTOP_BREAKPOINT ? 8 : 12;
     }
 
+    getOversizedWindowVisibleEdge() {
+        return window.innerWidth <= DESKTOP_BREAKPOINT
+            ? OVERSIZED_WINDOW_VISIBLE_EDGE_MOBILE
+            : OVERSIZED_WINDOW_VISIBLE_EDGE_DESKTOP;
+    }
+
     getMinWindowWidth() {
         return window.innerWidth <= DESKTOP_BREAKPOINT ? MIN_WINDOW_WIDTH_MOBILE : MIN_WINDOW_WIDTH_DESKTOP;
     }
 
     getMaxWindowWidth() {
-        return Math.max(this.getMinWindowWidth(), window.innerWidth - this.getViewportPadding() * 2);
+        return Math.max(
+            this.getMinWindowWidth(),
+            Math.min(MAX_WINDOW_PIXEL_SIZE, Math.round(window.innerWidth * MAX_WINDOW_VIEWPORT_MULTIPLIER)),
+        );
     }
 
     getMaxWindowHeight() {
-        return Math.max(140, window.innerHeight - this.getViewportPadding() * 2);
+        return Math.max(
+            140,
+            Math.min(MAX_WINDOW_PIXEL_SIZE, Math.round(window.innerHeight * MAX_WINDOW_VIEWPORT_MULTIPLIER)),
+        );
     }
 
     normalizeSizeByWidth(width) {
@@ -918,12 +936,20 @@ class FloatingAvatarWindow {
         this.root.style.setProperty('--bbfav-ui-scale', scale.toFixed(3));
     }
 
+    canPanFromContent(width = this.getWindowWidth(), height = this.getWindowHeight()) {
+        const padding = this.getViewportPadding();
+        return width > window.innerWidth - padding * 2 || height > window.innerHeight - padding * 2;
+    }
+
     setRect(rect = {}) {
         if (!this.root) return;
-        this.root.style.width = `${Math.round(rect.width)}px`;
-        this.root.style.height = `${Math.round(rect.height)}px`;
+        const width = Math.round(rect.width);
+        const height = Math.round(rect.height);
+        this.root.style.width = `${width}px`;
+        this.root.style.height = `${height}px`;
         this.root.style.left = `${Math.round(rect.left)}px`;
         this.root.style.top = `${Math.round(rect.top)}px`;
+        this.root.classList.toggle('is-oversized', this.canPanFromContent(width, height));
         this.updateChromeScale();
     }
 
@@ -957,14 +983,24 @@ class FloatingAvatarWindow {
         const padding = this.getViewportPadding();
         const width = rect.width ?? this.getWindowWidth();
         const height = rect.height ?? this.getWindowHeight();
-        const maxLeft = Math.max(window.innerWidth - width - padding, padding);
-        const maxTop = Math.max(window.innerHeight - height - padding, padding);
         return {
             width: Math.round(width),
             height: Math.round(height),
-            left: clamp(rect.left ?? this.getWindowLeft(), padding, maxLeft),
-            top: clamp(rect.top ?? this.getWindowTop(), padding, maxTop),
+            left: this.constrainAxis(rect.left ?? this.getWindowLeft(), width, window.innerWidth, padding),
+            top: this.constrainAxis(rect.top ?? this.getWindowTop(), height, window.innerHeight, padding),
         };
+    }
+
+    constrainAxis(position, size, viewportSize, padding) {
+        const normalMin = padding;
+        const normalMax = viewportSize - size - padding;
+
+        if (normalMax >= normalMin) {
+            return clamp(position, normalMin, normalMax);
+        }
+
+        const visibleEdge = Math.min(this.getOversizedWindowVisibleEdge(), Math.max(viewportSize, 1));
+        return clamp(position, visibleEdge - size, viewportSize - visibleEdge);
     }
 
     placeWindow(left, top) {
