@@ -543,11 +543,7 @@ class FloatingAvatarWindow {
             if (event.button !== 0) return;
             if (event.pointerType === 'touch') return;
             if (this.pinchState) return;
-            if (event.target.closest('.bbfav-close')) return;
-            if (event.target.closest('.bbfav-resize-handle')) return;
-            const dragHandle = event.target.closest('.bbfav-header, .bbfav-header-grip');
-            const panSurface = event.target.closest('.bbfav-image-wrap') && this.canPanFromContent();
-            if (!dragHandle && !panSurface) return;
+            if (!this.canStartDragFromTarget(event.target)) return;
             this.manager.bringToFront(this);
             this.stopAnimatedResize();
             this.dragState = {
@@ -648,6 +644,14 @@ class FloatingAvatarWindow {
         this.root?.classList.remove('is-dragging', 'is-resizing');
     }
 
+    canStartDragFromTarget(target) {
+        if (!(target instanceof Element)) return false;
+        if (!target.closest('.bbfav-window')) return false;
+        if (target.closest('.bbfav-close')) return false;
+        if (target.closest('.bbfav-resize-handle')) return false;
+        return true;
+    }
+
     handleTouchStart(event) {
         if (!this.isOpen()) return;
 
@@ -655,8 +659,6 @@ class FloatingAvatarWindow {
             const touch = event.touches[0];
             const closeButton = event.target.closest('.bbfav-close');
             const resizeHandle = event.target.closest('.bbfav-resize-handle');
-            const dragHandle = event.target.closest('.bbfav-header, .bbfav-header-grip');
-            const panSurface = event.target.closest('.bbfav-image-wrap') && this.canPanFromContent();
 
             if (closeButton) return;
 
@@ -678,7 +680,7 @@ class FloatingAvatarWindow {
                 return;
             }
 
-            if (dragHandle || panSurface) {
+            if (this.canStartDragFromTarget(event.target)) {
                 this.manager.bringToFront(this);
                 this.stopAnimatedResize();
                 this.touchResizeState = null;

@@ -48,6 +48,7 @@
     background: linear-gradient(to bottom, rgba(6, 8, 14, 0.94), rgba(6, 8, 14, 0.74));
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     z-index: 3;
+    cursor: grab;
 }
 
 #bbfav-root .bbfav-header-grip {
@@ -68,6 +69,7 @@
     align-items: center;
     justify-content: center;
     background: rgba(2, 6, 23, 0.58);
+    cursor: grab;
 }
 
 #bbfav-root .bbfav-image {
@@ -81,11 +83,8 @@
     image-rendering: auto;
 }
 
-#bbfav-root .bbfav-window.is-oversized .bbfav-image-wrap {
-    cursor: grab;
-}
-
-#bbfav-root .bbfav-window.is-oversized.is-dragging .bbfav-image-wrap {
+#bbfav-root .bbfav-window.is-dragging .bbfav-header,
+#bbfav-root .bbfav-window.is-dragging .bbfav-image-wrap {
     cursor: grabbing;
 }
 
